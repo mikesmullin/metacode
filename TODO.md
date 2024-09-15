@@ -1,0 +1,4 @@
+- BUG: it adds an extra newline at EOF
+- FEAT: only replace file if comment parts are different
+  - this way we're compatible with the clangd c code formatter
+- TODO: handlebars.mjs scope should be tree-based not stack-based
