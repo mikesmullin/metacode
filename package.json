@@ -1,0 +1,25 @@
+{
+  "name": "metacode",
+  "version": "1.0.0",
+  "description": "A metaprogramming tool.",
+  "main": "src/lib/macro.mjs",
+  "bin": "bin/metacode.mjs",
+  "scripts": {
+    "test": "node src/tests/unit/test001.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mikesmullin/metacode.git#main"
+  },
+  "keywords": [
+    "metaprogramming",
+    "macro",
+    "preprocessor"
+  ],
+  "author": "Mike Smullin",
+  "license": "WTFPL",
+  "bugs": {
+    "url": "https://github.com/mikesmullin/metacode/issues"
+  },
+  "homepage": "https://github.com/mikesmullin/metacode/tree/main#readme"
+}
