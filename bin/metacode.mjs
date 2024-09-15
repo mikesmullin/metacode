@@ -5,10 +5,15 @@ import { parseMacro, compileTranslationUnit } from '../src/lib/macro.mjs';
 const compileFile = async (filePath) => {
   const fileContent = await fs.readFile(filePath, 'utf-8');
   if (/#metacode\r?\n/g.test(fileContent)) {
-    const tokens = parseMacro(fileContent);
-    const generatedOutput = compileTranslationUnit(tokens);
-    await fs.writeFile(filePath, generatedOutput);
-    console.log(`Compiled output injected into ${filePath}`);
+    try {
+      const tokens = parseMacro(fileContent);
+      const generatedOutput = compileTranslationUnit(tokens);
+      await fs.writeFile(filePath, generatedOutput);
+      console.log(`Compiled output injected into ${filePath}`);
+    }
+    catch (e) {
+      console.error(e);
+    }
   } else {
     console.log(`No metacode block found in ${filePath}`);
   }

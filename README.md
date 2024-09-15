@@ -11,6 +11,11 @@ Features:
 - So from within your favorite IDE, use File Save (Ctrl+S) to see compiled meta-program output injected below your `#metagen` code comments.
 - Compatible with any existing code format-on-save feature of your IDE.
 
+## Usage
+```
+C:\> set WATCH=1 && npx metacode test.c
+```
+
 ## Example
 
 - **GOAL**: Generate valid C code.
