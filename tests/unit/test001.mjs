@@ -1,3 +1,6 @@
+import { parseMacro, compileTranslationUnit } from '../../src/lib/macro.mjs';
+
+const INPUT = `
 // #metacode
 // #macro ENUM(name,t)
 //   // {{name}}.h
@@ -29,7 +32,8 @@
 // ENUM(CatBreed, T_CAT_BREEDS)
 // #metagen
 // CatBreed.h
-typedef enum {
+typedef enum
+{
   CatBreed_Persian,
   CatBreed_MaineCoon,
   CatBreed_Siamese,
@@ -40,10 +44,16 @@ typedef enum {
 extern char* CatBreed__STRINGS[4];
 
 // CatBreed.c
-char* CatBreed__STRINGS[4] = {
-    "Persian",
-    "MaineCoon",
-    "Siamese",
-    "Bengal",
+char* CatBreed__STRINGS[4] =
+{
+  "Persian",
+  "MaineCoon",
+  "Siamese",
+  "Bengal",
 };
 // #metaend
+`;
+
+const out = parseMacro(INPUT);
+const out4 = compileTranslationUnit(out);
+console.log(out4);

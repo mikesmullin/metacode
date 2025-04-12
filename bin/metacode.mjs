@@ -4,10 +4,11 @@ import { parseMacro, compileTranslationUnit } from '../src/lib/macro.mjs';
 
 const compileFile = async (filePath) => {
   const fileContent = await fs.readFile(filePath, 'utf-8');
-  if (/#metacode\r?\n/g.test(fileContent)) {
+  if (/\/\/ #meta/g.test(fileContent)) {
     try {
       const tokens = parseMacro(fileContent);
       const generatedOutput = compileTranslationUnit(tokens);
+      // console.log(generatedOutput);
       await fs.writeFile(filePath, generatedOutput);
       console.log(`Compiled output injected into ${filePath}`);
     }

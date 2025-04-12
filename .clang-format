@@ -7,4 +7,6 @@
 	BinPackParameters: false,
 	BinPackArguments: false,
 	DerivePointerAlignment: false,
+	ReflowComments: false,
+	AlignTrailingComments: false,
 	PointerAlignment: Left }

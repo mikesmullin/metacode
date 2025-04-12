@@ -1,4 +1,5 @@
 import { chunker, is } from './chunker.mjs';
+import { err } from './macro.mjs';
 
 /**
  * String parser for Handlebars syntax.
@@ -27,7 +28,7 @@ export const parseHandlebars = str => {
   chunks = chunks.flatMap(chunk =>
     'X' != chunk[0] ? [chunk] :
       chunker(chunk[1],
-        /( +)|(\t+)|([\r\n]+)/g, (m, i, e) =>
+        /( +)|(\t+)|((?:\r?\n)+)/g, (m, i, e) =>
         is(m[1]) ? [['S', m[1]]] :  // space
           is(m[2]) ? [['T', m[2]]] :  // tab
             is(m[3]) ? [['N', m[3]]] :  // newline
@@ -83,14 +84,20 @@ const depthFirstTraversal = function* (node, lvl = 0) {
 
 /**
  * Sandboxed virtual machine for executing Handlebars template logic (ie. for-loop).
- * 
+ *
+ * @param {String} ref - line:char offset in source file
  * @param {Object} scope - variables will resolve to these values
- * @param {Object} macro - object containing macro function signature and template body
+ * @param {Object[]} macros - list of macro objects w/ function signature and template body
+ * @param {String} macro - name of macro in the list
  * @param {String[]} inparams - list of arguments passed to macro
  * @return {String} - compiled template output
  */
-export const execVm = (scope, macro, inparams) => {
+export const execVm = (ref, scope, macros, name, inparams) => {
   let out = '';
+  if ('object' != typeof macros || macros.length < 1 || !(name in macros)) {
+    err(ref, `Macro name ${JSON.stringify(name)} is referenced, but undefined.`);
+  }
+  let macro = macros[name];
   let scopestack = [scope];
   let looptree = createNode({ toks: [] });
   let looptree_nodecur = looptree;

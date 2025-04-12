@@ -5,7 +5,7 @@
   "main": "src/lib/macro.mjs",
   "bin": "bin/metacode.mjs",
   "scripts": {
-    "test": "node src/tests/unit/test001.mjs"
+    "test": "node tests/unit/test001.mjs"
   },
   "repository": {
     "type": "git",

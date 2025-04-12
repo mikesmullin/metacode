@@ -1,6 +1,3 @@
-import { parseMacro, compileTranslationUnit } from '../../lib/macro.mjs';
-
-const INPUT = `
 // #metacode
 // #macro ENUM(name,t)
 //   // {{name}}.h
@@ -52,8 +49,3 @@ char* CatBreed__STRINGS[4] =
   "Bengal",
 };
 // #metaend
-`;
-
-const out = parseMacro(INPUT);
-const out4 = compileTranslationUnit(out);
-console.log(out4);

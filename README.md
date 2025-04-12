@@ -12,13 +12,20 @@ Features:
 - Compatible with any existing code format-on-save feature of your IDE.
 
 ## Usage
+
+One-shot
 ```
-C:\> set WATCH=1 && npx metacode test.c
+C:\> npx metacode tests/fixtures/test.c
 ```
 
-## Example
+Watch mode
+```
+C:\> set WATCH=1 && npx metacode tests/fixtures/test.c
+```
 
-- **GOAL**: Generate valid C code.
+## Example 1
+
+- **GOAL**: Generate valid C code, using templates. Define these one place, and they update everywhere.
 - **PROBLEM**: To write repetitive C code by hand is toilsome work. (In this case, we need many `typedef enum` declarations.)
 - **SOLUTION**: We utilize the following Metacode to define the pattern of C `typedef enum` code we wish to repeat, using a `#macro` template.
   We then invoke the macro, passing in our `#table` data, to output various `enum` implementations.
@@ -80,7 +87,53 @@ char* CatBreed__STRINGS[4] =
 - **ALTERNATIVE BENEFITS**: Our tabular data format further reduces repetition (and is an improvement over the older competing solution of C preprocessor macros),
   if you imagine that some use cases might require thousands of rows of table data.
 
+## Example 2
 
+- **PROBLEM**: Iterating linked lists can be toilsome. Using a macro would prevent interactive debugging. 
+- **SOLUTION**: We first define the `FOR_EACH_LIST()` macro. This could be in any included file (using the C preprocessor `#include`).
+  Then later, we invoke the macro (as many times as we like).
+
+```c
+// List.h
+// #metacode
+// #macro FOR_EACH_LIST(LIST, TYPE, ITEM)
+//   {
+//     if (NULL == {{LIST}}) break;
+//     List__Node* __node = {{LIST}}->head;
+//     u32 __len = {{LIST}}->len; // cache; may mutate
+//     for (u32 __i = 0; __i < __len; __i++) {
+//       if (NULL == __node) break;
+//       {{TYPE}} {{ITEM}} = __node->data;
+//       __node = __node->next;
+// #metaend
+
+// EventEmitter.c
+#include "List.h"
+
+// Dispatch an event to all listeners
+void EventEmitter__emit(
+    Arena* arena,
+    EventEmitter* emitter,
+    Dispatcher__call_t cb) {
+  // find EventTuple1 by EventType
+  // #meta FOR_EACH_LIST(emitter->events, EventTuple1*, tup)
+  {
+    if (NULL == emitter->events) break;
+    List__Node* __node = emitter->events->head;
+    u32 __len = emitter->events->len;  // cache; may mutate
+    for (u32 __i = 0; __i < __len; __i++) {
+      if (NULL == __node) break;
+      EventTuple1* tup = __node->data;
+      __node = __node->next;
+      // #metaend
+      if (tup->event == event) {
+        // iterate Listeners
+        // ...
+      }
+    }
+  }
+}
+```
 
 ## Metacode
 
@@ -89,16 +142,15 @@ Rules:
   - each instance must be a contiguous block, as shown below
   - no uncommented/code lines allowed outside of `#metagen` and `#metaend`
 - `#metacode`
-  - must begin the comment block
+  - must begin the comment block.
   - distinguishes comment block as a meta-program translation unit
   - *identifiers* which are globally unique may be referenced later by other `#metacode`
+  - any lines under this one, other than `#<directive>` lines, are considered CODE statements; these can invoke macros defined earlier.
 - `#macro`
   - optional; use zero or more times
-  - inspired by C preprocessor macros (inline block)
-    ```
-    #macro FUNCTION_NAME(PARAM1, PARAM2) FUNCTION_BODY
-    ```
-  - meaningful indentation (multi-line block)
+  - defines a macro which can be called from `#metacode` or `#meta`
+  - inspired by C preprocessor macros
+  - (meaningful indentation) 2-space indentation is required (not for your code, but to end the macro definition)
     ```
     #macro FUNCTION_NAME(PARAM1)
       FUNCTION_BODY
@@ -117,20 +169,27 @@ Rules:
   - table body must appear on new line, indented below
     - end of table block is determined by *meaningful indentation* (like Python)
 - (implicit; in the remaining space between `#metacode` and `#metagen`, other than for `#table` and `#macro` use)
-   - shall contain implicit meta-program `#macro` `FUNCTION_BODY` code (similar to the C preprocessor)
-   - optional; but effectively acts as the bootstrap code: executed first, and without it no meta-program `#macro` is ultimately able to be executed, therefore no output can be generated.
-   - for example, if you defined a `#macro TEST()`, you would invoke it from here using `TEST()` (similar to C preprocessor)
-    - likewise, the compiled macro template would replace `TEST()` in the final output,
-    - but (unlike the C preprocessor) this space is not where the final output appears.
+   - shall contain `#macro` `FUNCTION_BODY` definitions (similar to the C preprocessor)
+     - without it, there are no macros defined to invoke later (there are no standard set of default macros provided)
+     - this is the most common use case for `#metacode` (use it to define your library of macro functions)
+   - and/or shall contain `CODE` statements, mainly macro function invocations (by the macro name you define prior)
+     - without it no meta-program `#macro` is ultimately able to be executed, therefore no output can be generated.
+- `#meta CODE`
+  - this is an alternative to the `#metacode ... #metagen ... #metaend` multi-line block.
+  - it instead lets you invoke a macro in just a single line `#meta CODE ... #metaend` (or two lines, if you count `#metaend`)
+  - `CODE` is your statement which can invoke previously defined macros
+  - ie. use this to invoke macros quickly
 - `#metagen`
-  - search/replaced by the final macro output of our meta-program compiler
-  - the only space where meta-program compiler output can appear!
-  - shall not to be modified by end-user (any text here will be lost between compilations!)
-- `#metaend` 
-  - required to follow if `#metagen` was also used
-  - delineates the end of line range where code replacement can happen
+  - begins the space between `#metagen ... #metaend` (not used for `#meta CODE ... #metaend`)
+- `#metaend`
+  - **REQUIRED!** the line above this directive is only space where meta-program compiler output can appear.
+  - required to follow if `#metagen` or `#meta` were used
+  - delineates the end of the comment block
 
 ### Syntax
+
+Multi-line invocation
+
 ```c
   // #metacode
   // #macro FUNCTION_NAME(PARAM1,PARAM2) ...
@@ -140,6 +199,17 @@ Rules:
   ...
   // #metaend
 ```
+
+or...
+
+Single-line invocation
+
+```c
+  // #meta CODE
+  ...
+  // #metaend
+```
+
 ### ABNF
 
 ```abnf
@@ -149,6 +219,7 @@ Rules:
   metacode     = "#metacode"
   macro        = "#macro" WSP+ id "(" (id ","?)* ")" (inline-block|block)
   table        = "#table" WSP+ id (inline-block|block)
+  meta         = "#meta" WSP+ inline-block
   metagen      = "#metagen"
   metaend      = "#metaend"
 ```
