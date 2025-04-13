@@ -11,6 +11,10 @@ Features:
 - So from within your favorite IDE, use File Save (Ctrl+S) to see compiled meta-program output injected below your `#metagen` code comments.
 - Compatible with any existing code format-on-save feature of your IDE.
 
+## Screenshot
+![screenshot](docs/video/metacode.gif)  
+See also: [video](docs/video/metacode.mp4)
+
 ## Usage
 
 One-shot
