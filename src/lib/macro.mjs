@@ -205,7 +205,7 @@ export const parseMacro = str => {
  * @param {String[][]} tokens - Parsed tokens.
  * @return String - Compiled output, intended to replace original input.
  */
-export const compileTranslationUnit = (macros = {}, scope = {}, tokens) => {
+export const compileTranslationUnit = (file, macros = {}, scope = {}, tokens) => {
   let lastIndent = "";
   const indent = (s) => lastIndent + s.replace(/\r?\n(?!$)/g, m => m + lastIndent);
   let out3 = '';
@@ -228,14 +228,14 @@ export const compileTranslationUnit = (macros = {}, scope = {}, tokens) => {
     else if ('0' == c) {
       const [, ref, line, _out] = t;
       const [name, ...params] = line.replace(/[)\s\r\n]+/g, '').split(/[(,]/g);
-      out3 = execVm(ref, scope, macros, name, params);
+      out3 = execVm(`${file}:${ref}`, scope, macros, name, params);
       out3 = indent(out3);
       out4 += _out;
     }
     else if ('N' == c) {
       const [, ref, line, _out] = t;
       const [name, ...params] = line.replace(/[)\s\r\n]+/g, '').split(/[(,]/g);
-      out3 = execVm(ref, scope, macros, name, params);
+      out3 = execVm(`${file}:${ref}`, scope, macros, name, params);
       out3 = indent(out3);
       out4 += _out;
     }

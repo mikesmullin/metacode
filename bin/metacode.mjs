@@ -7,9 +7,9 @@ const parseOne = async (macros, scope, filePath, output = false) => {
   const fileContent = await fs.readFile(filePath, 'utf-8');
   if (/\/\/ #meta/g.test(fileContent)) {
     const tokens = parseMacro(fileContent);
-    return compileTranslationUnit(macros, scope, tokens);
+    return compileTranslationUnit(filePath, macros, scope, tokens);
   } else {
-    console.log(`No metacode block found in ${filePath}`);
+    // console.log(`No metacode block found in ${filePath}`);
   }
 };
 
