@@ -1,22 +1,34 @@
 #!/usr/bin/env node
 import * as fs from 'fs/promises';
 import { parseMacro, compileTranslationUnit } from '../src/lib/macro.mjs';
+import { extract_include_units } from '../src/lib/ctrawler.mjs';
 
-const compileFile = async (filePath) => {
+const parseOne = async (macros, scope, filePath, output = false) => {
   const fileContent = await fs.readFile(filePath, 'utf-8');
   if (/\/\/ #meta/g.test(fileContent)) {
-    try {
-      const tokens = parseMacro(fileContent);
-      const generatedOutput = compileTranslationUnit(tokens);
-      // console.log(generatedOutput);
-      await fs.writeFile(filePath, generatedOutput);
-      console.log(`Compiled output injected into ${filePath}`);
-    }
-    catch (e) {
-      console.error(e);
-    }
+    const tokens = parseMacro(fileContent);
+    return compileTranslationUnit(macros, scope, tokens);
   } else {
     console.log(`No metacode block found in ${filePath}`);
+  }
+};
+
+const compileFile = async (filePath) => {
+  try {
+    const macros = {}, scope = {};
+    for await (const m of extract_include_units({ file: filePath })) {
+      console.log(`include ${m.h_file}`);
+      await parseOne(macros, scope, m.h_file, false);
+    }
+    const generatedOutput = await parseOne(macros, scope, filePath, true);
+    // console.log(generatedOutput);
+    console.log(`rewrite ${filePath}`);
+    await fs.writeFile(filePath, generatedOutput);
+    process.exit(0);
+  }
+  catch (e) {
+    console.error(e);
+    process.exit(1);
   }
 };
 

@@ -205,11 +205,9 @@ export const parseMacro = str => {
  * @param {String[][]} tokens - Parsed tokens.
  * @return String - Compiled output, intended to replace original input.
  */
-export const compileTranslationUnit = (tokens) => {
+export const compileTranslationUnit = (macros = {}, scope = {}, tokens) => {
   let lastIndent = "";
   const indent = (s) => lastIndent + s.replace(/\r?\n(?!$)/g, m => m + lastIndent);
-  const macros = {};
-  const scope = {};
   let out3 = '';
   let out4 = '';
   for (const t of tokens) {
