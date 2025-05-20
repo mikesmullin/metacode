@@ -15,7 +15,7 @@
       // "program": "${workspaceFolder}\\src\\tests\\unit\\test001.mjs",
       "program": "${workspaceFolder}\\bin\\metacode.mjs",
       "args": [
-        "tests/fixtures/test2.c"
+        "tests/fixtures/test3.c"
       ]
     }
   ]
